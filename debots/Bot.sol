@@ -17,7 +17,7 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
 
     constructor() public {
         tvm.accept();
-        root_public_key = msg.pubkey();
+        m_public_key = msg.pubkey();
     }
 
     function start() public override {
@@ -26,9 +26,9 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
         run_action(Action.INIT);
     }
 
-    function SetGameContract(address game) public onlyOwner {
+    function SetGameContract(address game_address) public onlyOwner {
         tvm.accept();
-        m_game = game;
+        m_game = game_address;
     }
 
     function SetIcon(bytes icon) public onlyOwner {
@@ -114,10 +114,6 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
         else {
             run_action(Action.UPDATE_LEVEL);
         }
-    }
-
-    function ForceSaveRequest() public {
-        ShowMenu(MenuID.SAVE_FORCE, "");
     }
 
     function EndGame() internal {
@@ -397,15 +393,29 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
         return format("{}.{}", left_part, low_part);
     }
 
-    function upgrade(TvmCell code) external view onlyOwner {
-        tvm.accept();
-        tvm.setcode(code);
-        tvm.setCurrentCode(code);
-    }
-
     function ShowImage(uint8 image_class) private view {
         if(image_class < ImageClass.NUM_CLASSES && m_images[image_class].length != 0)
             Media.output(0, "", m_images[image_class]);
     }
 
+    // Function that changes the code of current contract.
+    uint32 private upgrading = 0;
+	function upgrade(TvmCell newcode) public onlyOwner {
+        tvm.accept();
+        upgrading++;
+		// Runtime function that creates an output action that would change this
+		// smart contract code to that given by cell newcode.
+		tvm.setcode(newcode);
+		// Runtime function that replaces current code (in register C3) of the contract with newcode.
+		// It needs to call new `onCodeUpgrade` function
+		tvm.setCurrentCode(newcode);
+
+        TvmCell stateVars = abi.encode(m_game);
+        // Call function onCodeUpgrade of the 'new' code.
+		onCodeUpgrade(stateVars);
+	}
+
+    // This function will never be called. But it must be defined.
+	function onCodeUpgrade(TvmCell stateVars) private pure {
+	}
 }

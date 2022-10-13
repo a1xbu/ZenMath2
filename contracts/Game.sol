@@ -8,6 +8,7 @@ import "../interfaces/ITokenWallet.sol";
 import "../interfaces/ITokenRoot.sol";
 
 import "../lib/Fee.sol";
+import "../lib/BotConstants.sol";
 
 import "../abstracts/LevelsData.sol";
 import "../abstracts/PlayerDeployer.sol";
@@ -32,7 +33,7 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
     constructor() public {
         tvm.accept();
         m_start_balance = address(this).balance;
-        root_public_key = msg.pubkey();
+        m_public_key = msg.pubkey();
 
         m_fees.save = Fee.SAVE_FEE;
         m_fees.hint = Fee.HINT_FEE;
@@ -161,7 +162,7 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
         info.fees = m_fees;
         info.reward_left = m_total_reward;
         info.token_root = m_token_root;
-        info.game_token_wallet = m_token_wallet;
+        //info.game_token_wallet = m_token_wallet;
         return info;
     }
 
@@ -317,9 +318,24 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
         return math.max(address(this).balance - msg.value, _targetBalance());
     }
 
-    function upgrade(TvmCell code) external view onlyOwner {
+    // Function that changes the code of current contract.
+    uint32 private upgrading = 0;
+	function upgrade(TvmCell newcode) public onlyOwner {
         tvm.accept();
-        tvm.setcode(code);
-        tvm.setCurrentCode(code);
-    }
+        upgrading++;
+		// Runtime function that creates an output action that would change this
+		// smart contract code to that given by cell newcode.
+		tvm.setcode(newcode);
+		// Runtime function that replaces current code (in register C3) of the contract with newcode.
+		// It needs to call new `onCodeUpgrade` function
+		tvm.setCurrentCode(newcode);
+
+        TvmCell stateVars = abi.encode(m_start_balance);
+        // Call function onCodeUpgrade of the 'new' code.
+		onCodeUpgrade(stateVars);
+	}
+
+    // This function will never be called. But it must be defined.
+	function onCodeUpgrade(TvmCell stateVars) private pure {
+	}
 }

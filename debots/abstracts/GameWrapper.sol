@@ -17,24 +17,21 @@ import "../../interfaces/ITokenRoot.sol";
 import "../../interfaces/ITokenWallet.sol";
 
 import "../../lib/Gas.sol";
+import "../../lib/BotConstants.sol";
 
 import "State.sol";
 import "Debug.sol";
 
 
 abstract contract GameInteraction {
-    address internal m_wallet;
-    address internal m_game = address.makeAddrStd(0, 0);
+    address internal m_wallet; // User EVER wallet (Surf address)
+    address internal m_game;
 
     uint32 private m_last_success_id;
     uint32 private m_last_error_id;
     TvmCell private m_last_tx;
     uint128 m_last_gas_value;
     bool internal m_is_player_deployed = false;
-
-    function getUserAddress() internal view inline returns(address) {
-        return m_wallet;
-    }
 
     /// @dev Submit new transaction using Surf wallet.
     /// @param target_contract Transfer target address.
