@@ -34,7 +34,6 @@ interface IGameData {
         uint32 count_levels;
         uint128 count_players;
         address player;
-        string salt;
         uint128 reward_left;
         address token_root;
         address game_token_wallet;

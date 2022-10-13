@@ -16,6 +16,7 @@ interface ILevelData {
         LevelData answer;
         string question;
         uint256 answer_hash;
+        string salt;
         uint128 reward;
     }
 

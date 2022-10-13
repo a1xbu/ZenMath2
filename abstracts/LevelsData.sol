@@ -25,6 +25,7 @@ abstract contract LevelsData is ILevelData, Transferable{
         string answer,
         string question,
         uint256 answer_hash,
+        string salt,
         uint128 reward
     )
         public
@@ -47,6 +48,7 @@ abstract contract LevelsData is ILevelData, Transferable{
         m_levels[level_id].answer.image = answer_image;
         m_levels[level_id].answer.text = answer;
         m_levels[level_id].answer_hash = answer_hash;
+        m_levels[level_id].salt = salt;
         m_levels[level_id].question = question;
         m_levels[level_id].reward = reward;
     }

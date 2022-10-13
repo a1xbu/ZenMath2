@@ -16,7 +16,6 @@ import "../abstracts/PlayerDeployer.sol";
 contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
 
     uint128 m_start_balance = 0;
-    string m_salt = "---------- SET YOUR SALT HERE ----------"; // TODO: make it different for every level
     Fee.GameFees m_fees;
 
     address m_token_root;
@@ -160,7 +159,6 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
         info.count_players = m_total_players;
         info.player = getExpectedPlayerAddress(user_wallet);
         info.fees = m_fees;
-        info.salt = m_salt;
         info.reward_left = m_total_reward;
         info.token_root = m_token_root;
         info.game_token_wallet = m_token_wallet;
@@ -177,12 +175,7 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
         if(level_id > 0)
             _validate_level(user_address, level_id, prev_level_code);
 
-        Level out;
-        out.task = m_levels[level_id].task;
-        out.answer_hash = m_levels[level_id].answer_hash;
-        out.question = m_levels[level_id].question;
-        out.hint = m_levels[level_id].hint;
-        out.answer = m_levels[level_id].answer;
+        Level out = m_levels[level_id];
 
         // calculating reward in Project tokens
         out.reward = _calculate_reward(m_levels[level_id].reward);

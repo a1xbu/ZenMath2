@@ -38,12 +38,12 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
 
     function MenuHandler(uint32 index) public override {
         if(MenuId() == MenuID.MAIN) MainMenuHandler(index);
-        if(MenuId() == MenuID.GAME) GameMenuHandler(index);
-        if(MenuId() == MenuID.SAVE) SaveMenuHandler(index);
-        if(MenuId() == MenuID.CONTINUE) ContinueMenuHandler(index);
-        if(MenuId() == MenuID.SETTINGS) SettingsMenuHandler(index);
-        if(MenuId() == MenuID.SAVE_FORCE) SaveForceMenuHandler(index);
-        if(MenuId() == MenuID.SAVE_ON_EXIT) SaveForceMenuHandler(index);
+        else if(MenuId() == MenuID.GAME) GameMenuHandler(index);
+        else if(MenuId() == MenuID.SAVE) SaveMenuHandler(index);
+        else if(MenuId() == MenuID.CONTINUE) ContinueMenuHandler(index);
+        else if(MenuId() == MenuID.SETTINGS) SettingsMenuHandler(index);
+        else if(MenuId() == MenuID.SAVE_FORCE) SaveForceMenuHandler(index);
+        else if(MenuId() == MenuID.SAVE_ON_EXIT) SaveForceMenuHandler(index);
     }
 
     function StartGame() internal {
@@ -106,13 +106,10 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
 
     function Play() private {
         if((m_level_id + 1) % 10 == 0 && m_player_info.level < m_level_id) {
-            // The user must save progress every 10 levels
-            // The user can't continue playing without saving the game progress
-            // Note: asynchronous call is performed intentionally, to prevent recursion.
-            Terminal.print(tvm.functionId(ForceSaveRequest), "Please save your progress to continue.");
+            ShowMenu(MenuID.SAVE_FORCE, "Please save your progress to continue.");
         }
         else if (m_level_id >= m_game_info.count_levels) {
-            Terminal.print(tvm.functionId(EndGame), "No more levels left.");
+            EndGame();
         }
         else {
             run_action(Action.UPDATE_LEVEL);
@@ -123,7 +120,8 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
         ShowMenu(MenuID.SAVE_FORCE, "");
     }
 
-    function EndGame() public {
+    function EndGame() internal {
+        Terminal.print(0, "No more levels left.");
         if(m_max_level == m_player_info.level) {
             Terminal.print(0, "You can chose any unlocked level and play it again.");
             StartGame();
@@ -292,7 +290,7 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
 
     function ReadAnswer(string value) private {
         uint256 answer_hash;
-        string salted_value = value + m_game_info.salt;
+        string salted_value = value + m_level_data.salt;
 
         answer_hash = tvm.hash(salted_value);
         if (m_level_data.answer_hash == answer_hash) {
