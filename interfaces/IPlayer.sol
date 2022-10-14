@@ -10,7 +10,8 @@ interface IPlayer {
     struct PlayerInfo {
         uint16 level;
         uint32 points;
-        uint128 reward;
+        uint32 prev_points;
+        uint128 last_reward;
         address owner;
         string name;
         uint16 reward_paid_at; // the level reward paid at

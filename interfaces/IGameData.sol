@@ -3,7 +3,8 @@ pragma AbiHeader expire;
 pragma AbiHeader time;
 pragma AbiHeader pubkey;
 
-import "./../lib/Fee.sol";
+import "../interfaces/IPlayer.sol";
+import "../lib/Fee.sol";
 
 
 interface IGameData {
@@ -31,7 +32,7 @@ interface IGameData {
         address
     );
 
-    function RequestTokens(address recipient_address, uint16 level_id) external;
+    function RequestTokens(IPlayer.PlayerInfo player) external;
     function GetLevelImage(uint32 index, uint16 level_id) external view returns(bytes, uint8);
     function GetImage(uint32 index, uint8 class) external view returns(bytes, uint8);
 }

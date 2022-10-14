@@ -36,7 +36,7 @@ abstract contract MenuStrings is CommonMenuHandler{
             "🎮 Play",
             "⏭ Jump to level",
             "🔐 Unlock levels",
-            "⚙️Settings"
+            "👤️ User"
         ], [ // MenuID.GAME
             "Answer",
             "💡 Need a hint",
@@ -48,7 +48,7 @@ abstract contract MenuStrings is CommonMenuHandler{
         ], [ // MenuID.CONTINUE
             "Continue"
         ], [ // MenuID.SETTINGS
-            "Delete user",
+            "Delete progress",
             "↩️Main menu"
         ], [ // MenuID.SAVE_FORCE
             "📥 Save",

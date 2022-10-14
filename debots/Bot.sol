@@ -95,8 +95,10 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
         else if(action == Action.UPDATE_TOKENS) {
             if(m_token_balance > m_prev_token_balance) {
                 ShowImage(ImageClass.REWARD_IMAGE);
-                string text = format("Looks like you got a prize of:\n{} ZEN tokens",
-                    toFractional(m_token_balance - m_prev_token_balance, 9));
+                string text = format("{}\n{} {}",
+                    "Your reward:",
+                    toFractional(m_token_balance - m_prev_token_balance, 9),
+                    "⭐");
                 ShowMenu(MenuID.CONTINUE, text); // -> Play()
             }
             else
@@ -174,10 +176,18 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
     function FormatPlayerInfo() private view returns(string){
         //uint32 points = m_player_info.points + (m_max_level - m_player_info.level) * 10;
         string saved = "";
+        string reward = "";
         if(m_max_level != m_player_info.level)
-            saved = " (unsaved)"; //
+            saved = " (unsaved)";
 
-        return format("{} {}{}\n{} {}\n{} {}\n{} {} {}",
+        if(m_token_balance > 0)
+            reward = format("{} {} {}",
+                "\nYour reward:",
+                toFractional(m_token_balance, 9),
+                "⭐"
+            );
+
+        return format("{} {}{}\n{} {}\n{} {}\n{}",
             "Unlocked levels:",
             m_max_level >= m_game_info.count_levels ? m_game_info.count_levels : m_max_level + 1,
             saved,
@@ -185,9 +195,7 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
             m_level_id >= m_game_info.count_levels ? m_game_info.count_levels : m_level_id + 1,
             "Total levels:",
             m_game_info.count_levels,
-            "\nBalance:",
-            toFractional(m_token_balance, 9),
-            "ZEN");
+            reward);
     }
 
     function MainMenuHandler(uint32 index) private {
@@ -386,10 +394,21 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
     }
 
     function toFractional(uint128 balance, uint8 decimals) internal pure returns (string) {
+        uint8 digits = 0;
+        uint8 start_digit = 0;
+        if(decimals > 3) start_digit = decimals - 3;
+
         uint256 pow = uint256(10) ** decimals;
         uint left_part = balance / pow;
         uint right_part = pow + balance % pow;
-        bytes low_part = format("{}", right_part).substr(1, 4);
+        for(digits=start_digit; digits < decimals; digits++) {
+            if((right_part / (uint256(10) ** digits)) % 10 != 0)
+                break;
+        }
+        if(digits == decimals)
+            return format("{}", left_part);
+
+        bytes low_part = format("{}", right_part).substr(1, decimals-digits);
         return format("{}.{}", left_part, low_part);
     }
 

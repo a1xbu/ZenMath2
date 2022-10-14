@@ -21,7 +21,7 @@ contract Player is IPlayer{
     uint256[] m_answer_locks;  // max levels = 1024
     uint256[] m_hint_locks;
 
-    uint32 nonce = 11;
+    uint32 m_prev_points;
 
     /*
         @notice Creates new Player
@@ -37,7 +37,8 @@ contract Player is IPlayer{
     function init() private {
         player.points = 0;
         player.level = 0;
-        player.reward = 0;
+        player.last_reward = 0;
+        player.prev_points = 0;
         player.name = "";
         player.reward_paid_at = 0;
         m_answer_locks = new uint256[](4);
@@ -92,12 +93,13 @@ contract Player is IPlayer{
 
     function RequestReward() private {
         player.reward_paid_at = player.level;
+        player.last_reward = player.points - player.prev_points;
+        player.prev_points = player.points;
         IGameData(root_address).RequestTokens{
             value: 0,
             flag: MsgFlag.ALL_NOT_RESERVED // transfer back all unused gas
         }(
-            player.owner,
-            player.level
+            player
         );
     }
 
@@ -123,7 +125,7 @@ contract Player is IPlayer{
 
             if(unlock_hint) {
                 m_hint_locks[chunk] |= uint256(1) << uint8(level % 256);
-                penalty += 5;
+                penalty += 3;
             }
             if(unlock_answer) {
                 m_answer_locks[chunk] |= uint256(1) << uint8(level % 256);

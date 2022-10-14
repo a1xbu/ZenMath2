@@ -231,24 +231,26 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
         return player;
     }
 
-    function RequestTokens(address recipient_address, uint16 level_id)
+    function RequestTokens(IPlayer.PlayerInfo player)
         external override
     {
-        address player = getExpectedPlayerAddress(recipient_address);
+        address player_address = getExpectedPlayerAddress(player.owner);
         // if someone tries to send a fake message from the Player contract created by himself,
         // the Player contract address will differ and the fake transaction will fail therefore
-        require(msg.sender == player);
+        require(msg.sender == player_address);
+        require(player.level > 0);
+
         tvm.rawReserve(_reserve(), 0);
 
-        uint16 prev_level = level_id - 1;
-        if(msg.value < m_fees.reward || level_id == 0 || prev_level >= m_levels.length) {
+        uint16 prev_level = player.level - 1;
+        if(msg.value < m_fees.reward || prev_level >= m_levels.length) {
             // not enough gas attached or invalid level_id
-            recipient_address.transfer({ value: 0, flag: MsgFlag.ALL_NOT_RESERVED });
+            player.owner.transfer({ value: 0, flag: MsgFlag.ALL_NOT_RESERVED });
             return;
         }
 
         if(m_levels[prev_level].reward > 0 && m_total_reward > 0 && m_token_wallet.value != 0) {
-            uint128 amount = _calculate_reward(m_levels[prev_level].reward);
+            uint128 amount = _calculate_reward(m_levels[prev_level].reward * player.last_reward);
             m_vault_address.transfer({ value: m_fees.reward, flag: MsgFlag.SENDER_PAYS_FEES, bounce: false });
 
             m_total_reward -= amount;
@@ -258,7 +260,7 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
                 flag: MsgFlag.SENDER_PAYS_FEES
             }(
                 amount, // amount of tokens
-                recipient_address, // recipient address
+                player.owner, // recipient address
                 TokenGas.TARGET_WALLET_BALANCE, // 0.1 EVER
                 m_vault_address,  // Remaining gas receiver
                 false, // Notify receiver on incoming transfer
@@ -266,7 +268,7 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
             );
         }
 
-        recipient_address.transfer({ value: 0, flag: MsgFlag.ALL_NOT_RESERVED });
+        player.owner.transfer({ value: 0, flag: MsgFlag.ALL_NOT_RESERVED });
     }
 
     function WithdrawReward(uint128 amount, address recipient_address)
