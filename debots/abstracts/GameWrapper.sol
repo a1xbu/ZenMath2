@@ -452,7 +452,7 @@ abstract contract GameWrapper is State, DebugOutput, GameInteraction{
         m_save_level_id = level_id;
 
         if(!m_is_player_deployed)
-            m_last_gas_value += Gas.DEPLOY_NEW_PLAYER;
+            m_last_gas_value += Gas.TARGET_PLAYER_BALANCE;
 
         // do the sequence of async actions
         run_action(Action.SAVE_PLAYER);
@@ -460,10 +460,11 @@ abstract contract GameWrapper is State, DebugOutput, GameInteraction{
 
     function GameSave() public {
         bool claim_reward = false;
-        uint128 gas = Gas.GAME_SAVE + m_game_info.fees.save;
+        uint128 gas = Gas.GAME_SAVE + Gas.PLAYER_STORE + m_game_info.fees.save;
         if((m_level_id + 1) % 10 == 0) {
             claim_reward = true;
-            gas += m_game_info.fees.reward + Gas.ASK_FOR_TOKENS + Gas.TRANSFER_TO_RECIPIENT_VALUE;
+            gas += m_game_info.fees.reward + Gas.ASK_FOR_TOKENS +
+                Gas.TRANSFER_TO_RECIPIENT_VALUE + TokenGas.TARGET_WALLET_BALANCE;
             DbgPrint("Claim reward");
         }
 

@@ -50,7 +50,7 @@ abstract contract PlayerDeployer is Transferable{
 
     function DeployPlayer() internal returns (address) {
         address player = new Player{
-            value: Gas.DEPLOY_NEW_PLAYER,
+            value: Gas.TARGET_PLAYER_BALANCE,
             flag: MsgFlag.SENDER_PAYS_FEES,
             code: m_playerCode,
             pubkey: 0,
