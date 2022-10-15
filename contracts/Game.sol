@@ -26,7 +26,7 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
     uint128 m_total_reward = 0;
     uint128 m_reward_ratio = 1000;
 
-    uint32 private nonce = 5;
+    uint32 private nonce = 1000;
 
     bytes[][] m_images;
 

@@ -8,7 +8,7 @@ library Gas {
     uint128 constant TARGET_GAME_BALANCE            = 5 ton;
     uint128 constant TARGET_PLAYER_BALANCE          = 0.1 ton;
 
-    uint128 constant TRANSFER_TO_RECIPIENT_VALUE    = 2 ton;
+    uint128 constant TRANSFER_TO_RECIPIENT_VALUE    = 0.5 ton;
 }
 
 library TokenGas {

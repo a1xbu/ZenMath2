@@ -14,6 +14,7 @@ import "menu/Menu.sol";
 
 contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
     bytes internal m_icon;
+    uint32 private nonce = 331;
 
     constructor() public {
         tvm.accept();
