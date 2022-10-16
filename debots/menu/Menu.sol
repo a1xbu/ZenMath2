@@ -33,10 +33,10 @@ library MenuID {
 abstract contract MenuStrings is CommonMenuHandler{
     string[][] constant menu = [
         [ // MenuID.MAIN
-            "🎮 Play",
+            "🎮     Play    ",
             "⏭ Jump to level",
             "🔐 Unlock levels",
-            "👤️ User"
+            "👤️    Account   "
         ], [ // MenuID.GAME
             "Answer",
             "💡 Need a hint",

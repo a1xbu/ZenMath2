@@ -135,7 +135,8 @@ library Step {
     uint32 constant SAVE_PLAYER_CHECK = 0; // check if player contract deployed
     uint32 constant SAVE_PLAYER_UPDATE_INFO = 1; // load contract data if available
     uint32 constant SAVE_PLAYER_UPDATE_LEVEL_LOCKS = 2; // load level locks
-    uint32 constant SAVE_PLAYER_COMMIT = 3; // save new data in the blockchain
+    uint32 constant SAVE_PLAYER_GET_BALANCE = 3; // Check if the user has enough EVER to pay for the operation
+    uint32 constant SAVE_PLAYER_COMMIT = 4; // save new data in the blockchain
 
     uint32 constant UPDATE_TOKENS_CHECK = 0;
     uint32 constant UPDATE_TOKENS = 1;
@@ -165,6 +166,9 @@ abstract contract GameWrapper is State, DebugOutput, GameInteraction{
 
     uint32 private m_last_success_id;
     uint32 private m_last_error_id;
+
+    // Wallet
+    bool internal m_not_enough_money; // EVER wallet balance
 
     // Saved unlock flags
     uint32 private m_flags; // FLAG_UNLOCK_HINT, FLAG_UNLOCK_ANSWER, FLAG_CLAIM_REWARD
@@ -305,6 +309,18 @@ abstract contract GameWrapper is State, DebugOutput, GameInteraction{
         finish();
     }
 
+    // Wallet
+    function _OnGetEverBalance(uint128 nanotokens) public {
+        if(nanotokens > m_last_gas_value) {
+            m_not_enough_money = false;
+            next();
+        }
+        else {
+            m_not_enough_money = true;
+            finish();
+        }
+    }
+
     // Game interaction callbacks
     function _OnSaveSuccess(uint64) public {
         m_last_tx_success = true;
@@ -394,6 +410,9 @@ abstract contract GameWrapper is State, DebugOutput, GameInteraction{
         }
         else if(step == Step.SAVE_PLAYER_UPDATE_LEVEL_LOCKS) {
             PlayerData.getLocks(tvm.functionId(_OnUpdateLevelLocks), m_game_info.player, m_level_id);
+        }
+        else if(step == Step.SAVE_PLAYER_GET_BALANCE) {
+            Sdk.getBalance(tvm.functionId(_OnGetEverBalance), m_wallet);
         }
         else if(step == Step.SAVE_PLAYER_COMMIT) {
             GameSaveInternal(
@@ -503,6 +522,7 @@ abstract contract GameWrapper is State, DebugOutput, GameInteraction{
 
     function ResetSaveRequest() internal {
         m_flags = 0;
+        m_not_enough_money = false;
         m_save_level_id = m_level_id;
     }
 

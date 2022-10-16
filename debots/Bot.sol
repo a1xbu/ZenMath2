@@ -14,7 +14,7 @@ import "menu/Menu.sol";
 
 contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
     bytes internal m_icon;
-    uint32 private nonce = 331;
+    uint32 private nonce = 383;
 
     constructor() public {
         tvm.accept();
@@ -52,7 +52,7 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
     }
 
     function OnAction(uint32 action) internal override {
-        //DbgPrint(format("OnAction: {}", action));
+        DbgPrint(format("OnAction: {}", action));
         if(action == Action.INIT) {
             ShowImage(ImageClass.LOGO_IMAGE);
             StartGame();
@@ -64,7 +64,11 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
             ShowTask();
         }
         else if(action == Action.SAVE_PLAYER) {
-            Terminal.print(0, "Not saved");
+            if(m_not_enough_money) {
+                Terminal.print(0, format("❗️Sorry, this operation requires at least {} EVER ❗️",
+                    toFractional(m_last_gas_value, 9)));
+            }
+            Terminal.print(0, "❌ Not saved");
             if(DeleteUserRequested() || MenuId() == MenuID.SAVE_ON_EXIT) {
                 ResetSaveRequest();
                 StartGame();
@@ -143,7 +147,7 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
         else {
             if((AnswerUnlockRequested() && !m_level_locks.answer_unlocked) ||
                 (HintUnlockRequested() && !m_level_locks.hint_unlocked)) {
-                Terminal.print(0, "Sorry, the hint has not been unlocked yet. Please wait or try again.");
+                Terminal.print(0, "Sorry, the hint has not been unlocked. Please wait or try again.");
                 ResetSaveRequest();
             }
 
