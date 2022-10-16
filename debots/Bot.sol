@@ -379,7 +379,7 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
         address support, string hello, string language, string dabi, bytes icon
     ) {
         name = "ZenMath²";
-        version = "0.2.0";
+        version = "0.2.1";
         publisher = "";
         caption = "ZenMath² quiz";
         author = "";
