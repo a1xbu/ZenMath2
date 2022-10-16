@@ -173,8 +173,7 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
         returns(Level)
     {
         require(level_id < m_levels.length, ErrCodes.LEVEL_OUT_OF_BOUND);
-        if(level_id > 0)
-            _validate_level(user_address, level_id, prev_level_code);
+        require(level_id == 0 || _validate_level(user_address, level_id, prev_level_code));
 
         Level out = m_levels[level_id];
 
@@ -192,14 +191,15 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
         bool claim_reward
     )
         external override
-    returns (
-        address
-    ) {
+    {
         require(unlock_answer ? unlock_answer && msg.value > m_fees.answer : true);
         require(unlock_hint ? unlock_hint && msg.value > m_fees.hint : true);
-        _validate_level(msg.sender, level, level_code);
-
         tvm.rawReserve(_reserve(), 0);
+
+        if(!_validate_level(msg.sender, level, level_code)) {
+            msg.sender.transfer({ value: 0, flag: MsgFlag.ALL_NOT_RESERVED });
+            return;
+        }
 
         address player;
         if(deploy)
@@ -228,7 +228,6 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
         }
 
         msg.sender.transfer({ value: 0, flag: MsgFlag.ALL_NOT_RESERVED });
-        return player;
     }
 
     function RequestTokens(IPlayer.PlayerInfo player)
@@ -292,14 +291,14 @@ contract Game is Transferable, LevelsData, PlayerDeployer, IGameData {
         );
     }
 
-    function _validate_level(address user_address, uint16 level_id, uint32 level_code) internal pure inline {
+    function _validate_level(address user_address, uint16 level_id, uint32 level_code) internal pure returns (bool) {
         uint32 hash;
         TvmBuilder builder;
         builder.store(level_id);
         builder.store(user_address);
         builder.store(address(this));
         hash = uint32(tvm.hash(builder.toCell()) & 0xFFFF);
-        require(hash == level_code || level_id == 0xFFFF);
+        return hash == level_code;
     }
 
     function _calculate_reward(uint128 level_reward) internal inline view returns(uint128){

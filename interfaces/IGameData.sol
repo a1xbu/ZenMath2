@@ -26,11 +26,7 @@ interface IGameData {
         bool unlock_hint,
         bool unlock_answer,
         bool claim_reward
-    )
-        external
-    returns (
-        address
-    );
+    ) external;
 
     function RequestTokens(IPlayer.PlayerInfo player) external;
     function GetLevelImage(uint32 index, uint16 level_id) external view returns(bytes, uint8);
