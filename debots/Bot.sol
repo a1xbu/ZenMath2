@@ -126,7 +126,7 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
     function EndGame() internal {
         Terminal.print(0, "No more levels left.");
         if(m_max_level == m_player_info.level) {
-            Terminal.print(0, "You can chose any unlocked level and play it again.");
+            Terminal.print(0, "You can choose any unlocked level and play it again.");
             StartGame();
         }
         else
@@ -281,9 +281,13 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
         int_val = stoi(value);
 
         if(input_reason == GameConstants.INPUT_READ_LEVEL) {
-            if(int_val.hasValue() && int_val.get() >= 0 && int_val.get() < m_game_info.count_levels) {
+            if(int_val.hasValue() && int_val.get() > 0 && int_val.get() <= math.min(m_game_info.count_levels, m_max_level + 1)) {
                 uint16 level_id = uint16(int_val.get());
                 ReadLevel(level_id);
+            }
+            else {
+                Terminal.print(0, "Incorrect input");
+                ChooseLevel();
             }
         }
         else if(input_reason == GameConstants.INPUT_READ_ANSWER){
@@ -312,15 +316,16 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
     }
 
     function ChooseLevel() internal {
-        string message = format("{} (1-{}):", "Choose level", m_max_level + 1);
+        string message = format("{} (1-{}):", "Choose level", math.min(m_game_info.count_levels, m_max_level + 1));
         Input(GameConstants.INPUT_READ_LEVEL, message);
     }
 
     function ReadLevel(uint16 value) private {
-        if(value > 0 && value <= m_max_level)
+        uint16 max_level = math.min(uint16(m_game_info.count_levels - 1), m_max_level);
+        if(value > 0 && value <= max_level)
             m_level_id = value - 1;
         else
-            m_level_id = m_max_level;
+            m_level_id = max_level;
         Play();
     }
 
