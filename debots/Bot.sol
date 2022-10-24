@@ -79,8 +79,13 @@ contract GameBot is Debot, GameWrapper, MenuStrings, Transferable {
         else if(action == Action.SAVE_PLAYER_SUCCESS) {
             if(DeleteUserRequested())
             {
-                if((m_player_info.level == 0 || m_level_locks.hint_unlocked || m_level_locks.answer_unlocked))
+                if((m_player_info.level == 0 || m_level_locks.hint_unlocked || m_level_locks.answer_unlocked)) {
+                    // reset saved level ids
+                    m_max_level = 0;
+                    m_level_id = 0;
+
                     Terminal.print(0, "User data have been successfully deleted");
+                }
                 else
                     Terminal.print(0, "User data have not been deleted");
                 ResetSaveRequest();
