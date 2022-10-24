@@ -431,6 +431,10 @@ abstract contract GameWrapper is State, DebugOutput, GameInteraction{
 
     function SavePlayerSuccessHandler(uint32 step) private {
         if(step == Step.SAVE_PLAYER_CHECK) {
+            // reset saved level ids
+            m_max_level = 0;
+            m_level_id = 0;
+
             CheckIfAccountDeployed(Account.PLAYER, m_game_info.player);
         }
         if(step == Step.SAVE_PLAYER_UPDATE_INFO) {
